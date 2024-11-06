@@ -1,0 +1,24 @@
+name: remove-project
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          mv kubectl /usr/local/bin/
+    
+      - name: publish on cluster vkdr local
+        run: |
+          echo ${{ secrets.VKDR_LOCAL_KUBECONFIG }} | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl delete -f ./k8s/kubernetes.yaml -n app
